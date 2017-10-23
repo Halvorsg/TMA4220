@@ -1,0 +1,30 @@
+% a)
+addpath C:\Users\halvo\Documents\MATLAB\TMA4220\Project1\Grids
+addpath C:\Users\halvo\Documents\MATLAB\TMA4220\Project1\Oppgave1
+    N = [100,50,10];
+    theta = 3*pi/2;
+for i = 1:3
+    [p,tri,edge] = getSlice(N(i), theta);
+    TR = triangulation(tri, p);
+%     figure
+%     triplot(TR)
+%     s = sprintf('N = %i triangles', N(i));
+%     title(s)
+end
+
+A = zeros(N(1)); F = zeros(N(1),1);
+phi = [eye(2),[-1;-1]];
+
+for i = 1:length(p)
+    p1 = p(tri(i,1),:)'; p2 = p(tri(i,2),:)'; p3 = p(tri(i,3),:)'; 
+    J = [p1-p3 , p2-p3];
+    jacDet = abs(det(J));
+%Stiffness element matrix - Ak
+    G = J\phi;
+    Ak = jacDet*G'*G/2;
+%Load elemen vector - F
+end
+
+
+
+
