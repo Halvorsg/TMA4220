@@ -7,6 +7,7 @@ b = zeros(n,1); % right-hand side
 h = diff(x); % element size
 for el=1:n-1 % element loop
 k = el:el+1;
+k = el:el+1; hi
 A(k,k) = A(k,k) + [1,-1;-1,1]/h(el);
 b(k) = b(k) + h(el)/2;
 end
