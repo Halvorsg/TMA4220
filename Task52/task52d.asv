@@ -24,14 +24,15 @@ for i = 1:length(tri)
     tempIndices = [2*(tri(i,:)-1)+1;2*(tri(i,:)-1)+2];
     indices = tempIndices(:);
     A(indices,indices) = A(indices,indices) + Ak(E,v,p1,p2,p3);
-    % Finding the quadrature for 
+    % Finding the quadrature for fx and fy separate, easier to use existing
+    % code this way
     Fkx = quadrature2D(p1,p2,p3,3,fx);
     Fky = quadrature2D(p1,p2,p3,3,fy);
     Fk = [Fkx';Fky'];
     Fk = Fk(:);
     F(indices) = F(indices) + Fk;
 end
-
+%% Implementing boundary conditions and solving
 y = (~ismember(tri,edge)).*tri;
 inner_vertices_2 = unique(y);
 inner_vertices_2 = inner_vertices_2(2:end);
@@ -49,11 +50,17 @@ u_sol(inner_vertices) = u;
 ux = u_sol(1:2:end);
 uy = u_sol(2:2:end);
 
+%% Plotting
 figure
 trimesh(tri,p(:,1),p(:,2),ux)
+figure
+trimesh(tri,p(:,1),p(:,2),uy)
 exact_solutionx = @(x,y) (x.^2-1).*(y.^2-1);
 ux_exact = exact_solutionx(p(:,1),p(:,2));
 figure
 trimesh(tri,p(:,1),p(:,2),ux_exact)
+
+u_sol = [ux,uy];
+u_exact = 
 end
     
