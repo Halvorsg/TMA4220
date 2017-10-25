@@ -1,0 +1,33 @@
+function getMesh()
+cnt = 1;
+fileID = fopen('rectangle.msh','r');
+points = importdata('rectangle.msh',' ',5);
+str = '0';
+p = zeros(1000,4);
+i = 1;
+while ~isequal(str,'$EndNodes')
+    str = fgetl(fileID);
+    A = split(str);
+    if length(A) == 4
+        A = str2double(A)';
+        p(i,:) = A;
+        i = i+1;
+    end
+    cnt = cnt+1;
+end
+disp(i)
+Elements = zeros(length(p)*1.5,4);
+i = 1;
+cnt = 1;
+while ~isequal(str,'$EndElements')
+    str = fgetl(fileID);
+    A = split(str);
+    if length(A) == 6
+        A = str2double(A)';
+        Elements(i,:) = A(5:8);
+        i = i+1;
+    end
+    cnt = cnt+1;
+end
+disp(i)
+end
