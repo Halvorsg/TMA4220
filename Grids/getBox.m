@@ -2,7 +2,7 @@ function [p tet edge] = getBox(N),
 % function [p tet edge] = getBox(N),
 % 
 % description:
-%      generate a mesh triangulation of the unit box (0,1)^3
+%      generate a mesh triangulation of the unit box (-1,1)^3
 %
 % arguments:
 %   - N    the number of nodes in each spatial direction (N^3 total nodes)
@@ -14,7 +14,7 @@ function [p tet edge] = getBox(N),
 % author: Kjetil A. Johannessen
 % last edit: September 2016
 
-[y x z] = meshgrid(linspace(0,1,N), linspace(0,1,N), linspace(0,1,N));
+[y x z] = meshgrid(linspace(-1,1,N), linspace(-1,1,N), linspace(-1,1,N));
 p = [x(:), y(:), z(:)];
 
 tet  = delaunay(p(:,1), p(:,2), p(:,3));

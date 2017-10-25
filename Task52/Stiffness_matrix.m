@@ -1,31 +1,47 @@
 function Ak = Stiffness_matrix()
-syms('x_1','x_2','x_3','y_1','y_2','y_3','L1','L2','L3','real')
+syms('x_1','x_2','x_3','y_1','y_2','y_3','L1','L2','L3','x','y','v','real')
 
-% Cart = [1,1,1;
-%     x_1,x_2,x_3;
-%     y_1,y_2,y_3];
+Lamb2Cart = [1,1,1;
+            x_1,x_2,x_3;
+            y_1,y_2,y_3];
 
-% lambdas = simplify(inv(Cart))*(x_1*y_2 - x_2*y_1 - x_1*y_3 + x_3*y_1 + x_2*y_3 - x_3*y_2);
+
+        
+        
+Cart2Lamb = inv((Lamb2Cart));
 
 K = [x_1-x_3,x_2-x_3;
     y_1-y_3,y_2-y_3];
-A = det(K)/2;
+A2 = det(K); A = det(K)/2;
 
 
+compCart2Lamb = simplify(Cart2Lamb*A2);
+disp(compCart2Lamb)
 
-B = [y_2-y_3 ,    0    , y_3-y_1 ,    0    , y_1-y_2 , 0;
-        0    , x_3-x_2 ,    0    , x_1-x_3 ,    0    , x_2-x_1;
-     x_3-x_2 , y_2-y_3 , x_1-x_3 , y_3-y_1 , x_2-x_1 , y_1-y_2];
- 
-% B1 =1/(2*A)*[y_2-y_3 ,   0   , y_3-y_1 ,   0   , y_2-y_1 , 0;
-%                0   , x_3-x_2 ,   0   , x_1-x_3 ,   0   , x_2-x_1;
-%              1/2*(x_3-x_2) , 1/2*(y_2-y_3) , 1/2*(x_1-x_3) , 1/2*(y_3-y_1) , 1/2*(x_2-x_1) , 1/2*(y_1-y_2)];
+lambdas = compCart2Lamb*[1;x;y];
+d  = [x,y];
+D  = [d(1) , v;
+      v    , d(2);
+      d(2) , d(1)];
+  
+BasisFunctions = [eye(2)*lambdas(1) , eye(2)*lambdas(2) , eye(2)*lambdas(3)];
+% B1 = [y_2-y_3 ,    0    , y_3-y_1 ,    0    , y_1-y_2 , 0;
+%         0    , x_3-x_2 ,    0    , x_1-x_3 ,    0    , x_2-x_1;
+%      x_3-x_2 , y_2-y_3 , x_1-x_3 , y_3-y_1 , x_2-x_1 , y_1-y_2];
 
+B = diff(ones(3,6)*x,v);
+for i = 1:3
+    for j = 1:6
+        for k = 1:2
+            B(i,j) = B(i,j) + diff(BasisFunctions(k,j),D(i,k));
+        end
+    end
+end
     
 syms('E','v','x_','y_','real');
-C_inv = [1/E , -v/E , 0 ;
-        -v/E , 1/E  , 0;
-        0    ,     0,2*(1+v)/E]; %Be carefull with the last term here
+C_inv = [1 , -v , 0 ;
+        -v , 1  , 0;
+        0    ,     0,2*(1+v)]*1/E; %Be carefull with the last term here
 Ctemp = inv(C_inv);
 C = Ctemp/(E/(1-v^2));
 C = simplify(C);
@@ -33,6 +49,9 @@ C = simplify(C);
 Element_Stiffness_Matrix = simplify(A*B'*C*B * E/(1-v^2)*1/(2*A)^2);
 
 Ak = matlabFunction(Element_Stiffness_Matrix);
+
+
+%% testing
 
 testC =   8*[4,1,0;
            1,4,0;

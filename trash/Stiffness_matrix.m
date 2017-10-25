@@ -25,7 +25,7 @@ B1 =1/(2*A)*[y_2-y_3 ,   0   , y_3-y_1 ,   0   , y_2-y_1 , 0;
 syms('E','v','x_','y_','real');
 C_inv = [1/E , -v/E , 0 ;
         -v/E , 1/E  , 0;
-        0    ,     0,(1+v)/E];
+        0    ,     0,2*(1+v)/E];
 Ctemp = inv(C_inv);
 C = Ctemp/(E/(1-v^2));
 C = simplify(C);
