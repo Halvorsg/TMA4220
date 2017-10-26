@@ -83,9 +83,11 @@ for iterator=1:length(Elements)
         
         
 end
+nnz(Mass_matrix)
+nnz(Stiffness_matrix)
+Comp_mat=Mass_matrix\Stiffness_matrix;
 
-Comp_mat=M\A;
-
+size(Comp_mat)
 
 
 end

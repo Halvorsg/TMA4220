@@ -18,11 +18,11 @@ C=inv(C_inv)/det(C_inv);
 Stiffness_matrix=spalloc(length(points)*3,length(points)*3,length(points)*100);
 Mass_matrix=spalloc(length(points)*3,length(points)*3,length(points)*100);
 
-cnt_dwn=length(E)
+cnt_dwn=length(Elements);
 
 
 for iterator=1:length(Elements)
- 
+ cnt_dwn=cnt_dwn-1
       
         x_1=points(Elements(iterator,1),:);
         x_2=points(Elements(iterator,2),:);
@@ -49,9 +49,9 @@ for iterator=1:length(Elements)
         
         shear_vector=[e_xx;e_yy;e_zz;e_xy;e_xz;e_yz];
      
-        A=zeros(12);
-      size(Stiffness_matrix)
      
+        A=zeros(12);
+      
         for i=1:12
             for j=1:12
                 A(i,j)=abs(det_J_t)*dot(shear_vector(:,i),C*shear_vector(:,j));
@@ -59,7 +59,8 @@ for iterator=1:length(Elements)
                 Stiffness_matrix(Elements(iterator,ceil(i/3))*3+mod(i-1,3),Elements(iterator,ceil(j/3))*3+mod(j-1,3))=A(i,j);
             end
         end
-       
+     
+     
         Mass_mat=zeros(12);
                 
         for i=1:4
@@ -71,11 +72,22 @@ for iterator=1:length(Elements)
                 Mass_mat((i-1)*3+3,(j-1)*3+3)=Mass_mat((i-1)*3+1,(j-1)*3+1);
             end
         end
-        Mass_mat=density*Mass_mat;
+        
+        for i=1:12
+            for j=1:12
+                Mass_matrix(Elements(iterator,ceil(i/3))*3+mod(i-1,3),Elements(iterator,ceil(j/3))*3+mod(j-1,3))=Mass_mat(i,j);
+            end
+        end
+     
        
         
-   toc;     
+        
 end
+
+Comp_mat=M\A;
+
+[V,D]=eig(A);
+
 
 end
 
