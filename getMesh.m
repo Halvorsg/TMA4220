@@ -1,7 +1,7 @@
-function getMesh()
+function [points, Elements] = getMesh(file_name)
 cnt = 1;
-fileID = fopen('sphere.msh','r');
-points = importdata('sphere.msh',' ',5);
+fileID = fopen(file_name,'r');
+points = importdata(file_name,' ',5);
 str = '0';
 p = zeros(1000,4);
 i = 1;
