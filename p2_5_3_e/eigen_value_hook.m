@@ -1,17 +1,17 @@
 function [ soething_else ] = eigen_value_hook( something)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-
-  E_value= 3.43645;
-        my_value= 0.456;
-        my_frac=(1-my_value)/(2);
+syms('E','v')
+  E_value= E;
+        my_value= v;
+        my_frac=(1+my_value)*(2);
         density=1;
         corr_vec=[0 0 0 1];
         basis_f=[eye(3),-ones(3,1)];
 
         
-C_inv=blkdiag(-(my_value)*ones(3)+(my_value+1)*eye(3),my_frac*eye(3));
-C=inv(C_inv)/det(C_inv);
+C_inv=blkdiag(-(my_value)*ones(3)+(my_value+1)*eye(3),my_frac*eye(3))/E_value;
+C=inv(C_inv);
 
 [points,Elements] = getMesh('rectangle.msh');
 

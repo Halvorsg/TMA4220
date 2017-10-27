@@ -1,0 +1,15 @@
+function convergence()
+N = [5,10,15];
+e = zeros(length(N),3);
+
+for i = 1:length(N)
+    tic
+    [ux,uy,uz,u_exact] = task53e(N(i));
+    e(i,:) = [max(abs(ux-u_exact)),max(abs(uy-u_exact)),max(abs(uz-u_exact))];
+    toc
+end
+
+plot(N.^-1,e')
+
+
+end
