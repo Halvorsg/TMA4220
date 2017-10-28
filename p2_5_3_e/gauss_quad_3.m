@@ -22,7 +22,7 @@ points_eval=[transpose(point_1) transpose(point_2) transpose(point_3) transpose(
         J_t=[transpose(point_1-point_4), transpose(point_2-point_4), transpose(point_3-point_4)];
         det_J_t=det(J_t);
   
-        int_value=int_value*(1/3)*(abs(det_J_t));
+        int_value=int_value*(1/6)*(abs(det_J_t));
         
 end
 

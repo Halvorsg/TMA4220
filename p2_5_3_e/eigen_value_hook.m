@@ -1,6 +1,13 @@
-function [ soething_else ] = eigen_value_hook( something)
+function [ Stiffness_matrix,Mass_matrix ] = eigen_value_hook( something)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
+addpath ..\Grids
+addpath ..\Oppgave1
+%% Get triangulation
+[points,Elements,edge] = getDefinedBox(-1,1,-1,1,-1,1,10);
+TR = triangulation(Elements,points);
+tetramesh(TR)
+
 E = 1; v = 0.3;
   E_value= E;
         my_value= v;
@@ -13,7 +20,7 @@ E = 1; v = 0.3;
 C_inv=blkdiag(-(my_value)*ones(3)+(my_value+1)*eye(3),my_frac*eye(3))/E_value;
 C=inv(C_inv);
 
-[points,Elements] = getMesh('rectangle.msh');
+%[points,Elements] = getMesh('rectangle.msh');
 
 Stiffness_matrix=spalloc(length(points)*3,length(points)*3,length(points)*100);
 Mass_matrix=spalloc(length(points)*3,length(points)*3,length(points)*100);
@@ -54,15 +61,11 @@ for iterator=1:length(Elements)
       
         for i=1:12
             for j=1:12
-<<<<<<< HEAD
-                A(i,j)=abs(det_J_t)*dot(shear_vector(:,i),C*shear_vector(:,j));
+
+                A(i,j)=-abs(det_J_t)*abs(det_J_t)*dot(shear_vector(:,i),C*shear_vector(:,j));
                 %Elements(iterator,ceil(i/3))*3-mod(i+1,3)
                 Stiffness_matrix(Elements(iterator,ceil(i/3))*3-mod(i+1,3),Elements(iterator,ceil(j/3))*3-mod(j+1,3))=A(i,j);
-=======
-                A(i,j)=(-det_J_t/6)*dot(shear_vector(:,i),C*shear_vector(:,j));
-                
-                Stiffness_matrix(Elements(iterator,ceil(i/3))*3+mod(i-1,3),Elements(iterator,ceil(j/3))*3+mod(j-1,3))=A(i,j);
->>>>>>> d4b3b1fcdef9cf10eedf8fd0b8fd3d8e52d256db
+
             end
         end
        
@@ -75,7 +78,7 @@ for iterator=1:length(Elements)
                       
             for j=1:4
                 RHS_pre_phi_1 =@(x,y,z) ([x,y,z]-x_4)*G(1:3,1:3)*basis_f(:,j)+corr_vec(j);
-                Mass_mat((i-1)*3+1,(j-1)*3+1)=gauss_quad_3(x_1,x_2,x_3,x_4,5,@(x,y,z) RHS_pre_phi_1(x,y,z)*RHS_pre_phi_2(x,y,z));
+                Mass_mat((i-1)*3+1,(j-1)*3+1)=gauss_quad_3(x_1,x_2,x_3,x_4,5,@(x,y,z) RHS_pre_phi_1(x,y,z)*RHS_pre_phi_2(x,y,z))/(-abs(det_J_t));
                 Mass_mat((i-1)*3+2,(j-1)*3+2)=Mass_mat((i-1)*3+1,(j-1)*3+1);
                 Mass_mat((i-1)*3+3,(j-1)*3+3)=Mass_mat((i-1)*3+1,(j-1)*3+1);
             end
