@@ -3,7 +3,9 @@ function [ux,uy,uz,u_exact] = task53e(N)
 addpath ..\Grids
 addpath ..\Oppgave1
 %% Get triangulation
-[p,tri,edge] = getBox(N);
+[p,tri,edge] = getDefinedBox(-1,1,-1,1,-0.01,0.01,N);
+TR = triangulation(tri,p);
+tetramesh(TR)
 % [p,tri] = getMesh('rectangle.msh');
 
 % [p,tri] = getMesh('rectangle.msh');
