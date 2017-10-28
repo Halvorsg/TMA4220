@@ -1,7 +1,7 @@
 function [ soething_else ] = eigen_value_hook( something)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-syms('E','v')
+E = 1; v = 0.3;
   E_value= E;
         my_value= v;
         my_frac=(1+my_value)*(2);
@@ -30,11 +30,11 @@ for iterator=1:length(Elements)
         x_4=points(Elements(iterator,4),:);
        
         J_t=[transpose(x_1-x_4), transpose(x_2-x_4),transpose(x_3-x_4)];
-        det_J_t=det(J_t);
+        det_J_t=(det(J_t'));
 
   
         
-        G=transpose([J_t])\basis_f;
+        G=(transpose([J_t])\basis_f);
         small_G=G;
         temp=blkdiag(G,G,G);
         G=[temp(:,1),temp(:,5),temp(:,9),temp(:,2),temp(:,6),temp(:,10),temp(:,3),temp(:,7),temp(:,11),temp(:,4),temp(:,8),temp(:,12)];
@@ -54,11 +54,12 @@ for iterator=1:length(Elements)
       
         for i=1:12
             for j=1:12
-                A(i,j)=abs(det_J_t)*dot(shear_vector(:,i),C*shear_vector(:,j));
-          
+                A(i,j)=(-det_J_t/6)*dot(shear_vector(:,i),C*shear_vector(:,j));
+                
                 Stiffness_matrix(Elements(iterator,ceil(i/3))*3+mod(i-1,3),Elements(iterator,ceil(j/3))*3+mod(j-1,3))=A(i,j);
             end
         end
+       
      
      
         Mass_mat=zeros(12);
