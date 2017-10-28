@@ -55,16 +55,17 @@ for iterator=1:length(Elements)
         for i=1:12
             for j=1:12
                 A(i,j)=abs(det_J_t)*dot(shear_vector(:,i),C*shear_vector(:,j));
-          
-                Stiffness_matrix(Elements(iterator,ceil(i/3))*3+mod(i-1,3),Elements(iterator,ceil(j/3))*3+mod(j-1,3))=A(i,j);
+                %Elements(iterator,ceil(i/3))*3-mod(i+1,3)
+                Stiffness_matrix(Elements(iterator,ceil(i/3))*3-mod(i+1,3),Elements(iterator,ceil(j/3))*3-mod(j+1,3))=A(i,j);
             end
         end
      
      
         Mass_mat=zeros(12);
-                
+        G=small_G;        
         for i=1:4
                 RHS_pre_phi_2=@(x,y,z) ([x,y,z]-x_4)*G(1:3,1:3)*basis_f(:,i)+corr_vec(i);
+                      
             for j=1:4
                 RHS_pre_phi_1 =@(x,y,z) ([x,y,z]-x_4)*G(1:3,1:3)*basis_f(:,j)+corr_vec(j);
                 Mass_mat((i-1)*3+1,(j-1)*3+1)=gauss_quad_3(x_1,x_2,x_3,x_4,5,@(x,y,z) RHS_pre_phi_1(x,y,z)*RHS_pre_phi_2(x,y,z));
@@ -75,7 +76,7 @@ for iterator=1:length(Elements)
         
         for i=1:12
             for j=1:12
-                Mass_matrix(Elements(iterator,ceil(i/3))*3+mod(i-1,3),Elements(iterator,ceil(j/3))*3+mod(j-1,3))=Mass_mat(i,j);
+                Mass_matrix(Elements(iterator,ceil(i/3))*3-mod(i+1,3),Elements(iterator,ceil(j/3))*3-mod(j+1,3))=Mass_mat(i,j);
             end
         end
      
