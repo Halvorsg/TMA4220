@@ -89,8 +89,9 @@ tic
 V = V(:,index); % Eigenvectors corresponding to eigenvalues in D
 eigen = toc;
 fprintf('Eigenvalues = %f\n',eigen)
-% 
-scaling = 0;
+%
+%{
+scaling = 10;
 f = figure;
 plot_vec = zeros(length(p),3);
 x=zeros(length(p),1);
@@ -116,14 +117,20 @@ for j=1:maxiter
 %plot_vec(i,:)=p(i,:)+scaling*[V(i*3-2,1),V(i*3-1,1),V(i*3,1)]*sin(time);
 %        plot_vec(i,:)=p(i,:)+scaling*[rand(1)/10,rand(1)/10,rand(1)/10]*sin(time);
        
-    end
+    
      f=figure;
 % TR = triangulation(tri,plot_vec);
 % tetramesh(TR);
-    f = meshgrid(x,y,z);
+[m_x,m_y] = meshgrid(-1:.05:1, -1:.05:1);
+test_plot = griddata(x,y,z,m_x,m_y);
+surf(-1:0.05:1,-1:0.05:1,test_plot)
 Animation(j)=getframe(f);
-%       
-% end
+%   
+
+end
+movie(gcf,Animation,20)
+%}
+%{
 %% Solving the test problem
 u = A\F;
 u_sol = zeros(3*length(p),1);
@@ -140,7 +147,7 @@ u_exact = exact(p(:,1),p(:,2),p(:,3));
 % plot(uz)
 % plot(u_exact)
 %% Visualization
-
+%}
 
 end
 
