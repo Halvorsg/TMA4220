@@ -90,7 +90,7 @@ V = V(:,index); % Eigenvectors corresponding to eigenvalues in D
 eigen = toc;
 fprintf('Eigenvalues = %f\n',eigen)
 % 
-scaling = 0;
+scaling = 10;
 f = figure;
 plot_vec = zeros(length(p),3);
 x=zeros(length(p),1);
@@ -104,9 +104,9 @@ for j=1:maxiter
     time=(2/maxiter)*j*pi;
     for i=1:length(p)
     if p(i,3)>0.98
-    x(step)=p(i,1)+V(i*3-2,1)*scaling*sin(time);
-    y(step)=p(i,2)+V(i*3-1,1)*scaling*sin(time);
-    z(step)=p(i,3)+V(i*3,1)*scaling*sin(time);
+    x(step)=V(i*3-2,1);
+    y(step)=V(i*3-1,1);
+    z(step)=V(i*3,1);
     step=step+1;
     end
     end
@@ -118,9 +118,8 @@ for j=1:maxiter
        
     end
      f=figure;
-% TR = triangulation(tri,plot_vec);
-% tetramesh(TR);
-    f = meshgrid(x,y,z);
+TR{j} = triangulation(tri,plot_vec);
+tetramesh(TR);
 Animation(j)=getframe(f);
 %       
 % end
