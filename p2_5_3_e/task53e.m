@@ -92,7 +92,7 @@ fprintf('Eigenvalues = %f\n',eigen)
 %
 %{
 scaling = 10;
-f = figure;
+f = figure('visible', 'off');
 plot_vec = zeros(length(p),3);
 x=zeros(length(p),1);
 y=zeros(length(p),1);
@@ -118,16 +118,17 @@ for j=1:maxiter
 %        plot_vec(i,:)=p(i,:)+scaling*[rand(1)/10,rand(1)/10,rand(1)/10]*sin(time);
        
     
-     f=figure;
+     f=figure('visible', 'off');
 % TR = triangulation(tri,plot_vec);
 % tetramesh(TR);
 [m_x,m_y] = meshgrid(-1:.05:1, -1:.05:1);
 test_plot = griddata(x,y,z,m_x,m_y);
-surf(-1:0.05:1,-1:0.05:1,test_plot)
+surf(-1:0.05:1,-1:0.05:1,test_plot);
 Animation(j)=getframe(f);
 %   
 
 end
+f=figure('visible','on')
 movie(gcf,Animation,20)
 %}
 %{
