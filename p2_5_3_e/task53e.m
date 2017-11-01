@@ -84,53 +84,79 @@ A = sparse(A);
 
 %% We now have M and A, want to find the eigenvalues inv(M)*A
 tic
-[V,D] = eig(full(M\A));
+
+[V,D] = eigs(M,A,20);
 [D,index] = sort(diag(D)); %Eigenvalues sorted from largest to smallest
 V = V(:,index); % Eigenvectors corresponding to eigenvalues in D
 eigen = toc;
 fprintf('Eigenvalues = %f\n',eigen)
 %
+%% surface mpde
 %{
 scaling = 10;
 f = figure('visible', 'off');
-plot_vec = zeros(length(p),3);
 x=zeros(length(p),1);
 y=zeros(length(p),1);
 z=zeros(length(p),1);
 
-step=1;
 
-maxiter = 5;
-for j=1:maxiter
-    time=(2/maxiter)*j*pi;
-    for i=1:length(p)
-    if p(i,3)>0.98
-    x(step)=p(i,1)+V(i*3-2,1)*scaling*sin(time);
-    y(step)=p(i,2)+V(i*3-1,1)*scaling*sin(time);
-    z(step)=p(i,3)+V(i*3,1)*scaling*sin(time);
+maxiter = 10;
+for jtt=1:maxiter
+  jtt  
+step=1;
+    time=(2/maxiter)*jtt*pi;
+    for itt=1:length(p)
+    if p(itt,3)>0.98
+    x(step)=p(itt,1)+V(itt*3-2,5)*scaling*sin(time);
+    y(step)=p(itt,2)+V(itt*3-1,5)*scaling*sin(time);
+    z(step)=p(itt,3)+V(itt*3,5)*scaling*sin(time);
     step=step+1;
     end
     end
     x=x(1:step-1);
     y=y(1:step-1);
     z=z(1:step-1);
-%plot_vec(i,:)=p(i,:)+scaling*[V(i*3-2,1),V(i*3-1,1),V(i*3,1)]*sin(time);
-%        plot_vec(i,:)=p(i,:)+scaling*[rand(1)/10,rand(1)/10,rand(1)/10]*sin(time);
-       
+   
     
      f=figure('visible', 'off');
-% TR = triangulation(tri,plot_vec);
-% tetramesh(TR);
-[m_x,m_y] = meshgrid(-1:.05:1, -1:.05:1);
+[m_x,m_y] = meshgrid(-1:.02:1, -1:.02:1);
 test_plot = griddata(x,y,z,m_x,m_y);
-surf(-1:0.05:1,-1:0.05:1,test_plot);
-Animation(j)=getframe(f);
+surf(-1:0.02:1,-1:0.02:1,test_plot);
+zlim([0 2])
+Animation(jtt)=getframe(f);
 %   
 
 end
 f=figure('visible','on')
 movie(gcf,Animation,20)
+
 %}
+%% tetramesh mode
+
+scaling = 10;
+f = figure('visible', 'off');
+plot_vec = zeros(length(p),3);
+maxiter = 10;
+
+for j=1:maxiter
+    j  
+    step=1;
+        time=(2/maxiter)*j*pi;
+        for i=1:length(p)
+        plot_vec(i,:)=p(i,:)+scaling*[V(i*3-2,1),V(i*3-1,1),V(i*3,1)]*sin(time);
+        end
+
+    f=figure('visible', 'off');
+    TR = triangulation(tri,plot_vec);
+    tetramesh(TR);
+
+    Animation(j)=getframe(f);
+end
+
+f=figure('visible','on')
+movie(gcf,Animation,20)
+
+%% example problem
 %{
 %% Solving the test problem
 u = A\F;
