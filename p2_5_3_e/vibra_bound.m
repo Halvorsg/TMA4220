@@ -1,14 +1,14 @@
-function [ux,uy,uz,u_exact] = task53e(N)
+function [ux,uy,uz,u_exact] = vibra_bound(N)
 
 addpath ..\Grids
 addpath ..\Oppgave1
 %% Get triangulation
-[p,tri,edge] = getDefinedBox(-1,1,-1,1,-1,1,N);
-TR = triangulation(tri,p);
-tetramesh(TR)
-%[p,tri] = getMesh('rectangle.msh');
+%[p,tri,edge] = getDefinedBox(-1,1,-1,1,-1,1,N);
 %TR = triangulation(tri,p);
 %tetramesh(TR)
+[p,tri] = getMesh('rectangle.msh');
+TR = triangulation(tri,p);
+tetramesh(TR)
 
 %[p,tri] = getMesh('rectangle.msh');
 C  = @(E,v)reshape([(E.*(v-1.0))./(v+v.^2.*2.0-1.0),-(E.*v)./(v+v.^2.*2.0-1.0),-(E.*v)./(v+v.^2.*2.0-1.0),0.0,0.0,0.0,-(E.*v)./(v+v.^2.*2.0-1.0),(E.*(v-1.0))./(v+v.^2.*2.0-1.0),-(E.*v)./(v+v.^2.*2.0-1.0),0.0,0.0,0.0,-(E.*v)./(v+v.^2.*2.0-1.0),-(E.*v)./(v+v.^2.*2.0-1.0),(E.*(v-1.0))./(v+v.^2.*2.0-1.0),0.0,0.0,0.0,0.0,0.0,0.0,(E.*(1.0./2.0))./(v+1.0),0.0,0.0,0.0,0.0,0.0,0.0,(E.*(1.0./2.0))./(v+1.0),0.0,0.0,0.0,0.0,0.0,0.0,(E.*(1.0./2.0))./(v+1.0)],[6,6]);
@@ -24,7 +24,7 @@ fcn = @plus; %For parallellization
 
 
 
-E = 1;
+E = 100000;
 v = 0.3;
 fx = @(x,y,z) (E/((1+v)*(1-2*v)))* ( 4*v*x*y*(z^2 - 1) - 2*(y^2 - 1)*(v - 1/2)*(x^2 + 2*z*x - 1) - 2*(z^2 - 1)*(v - 1/2)*(x^2 + 2*y*x - 1) - 2*(y^2 - 1)*(z^2 - 1)*(v - 1) + 4*v*x*z*(y^2 - 1));
 fy = @(x,y,z) (E/((1+v)*(1-2*v)))* ( 4*v*x*y*(z^2 - 1) - 2*(x^2 - 1)*(v - 1/2)*(y^2 + 2*z*y - 1) - 2*(z^2 - 1)*(v - 1/2)*(y^2 + 2*x*y - 1) - 2*(x^2 - 1)*(z^2 - 1)*(v - 1) + 4*v*y*z*(x^2 - 1));
@@ -77,9 +77,27 @@ fprintf('Matrix = %f \nQuadrature = %f\n',mat,quad)
 
 %tempIV = [3*(inner_vertices_2-1)+1 ; 3*(inner_vertices_2-1)+2 ; 3*(inner_vertices_2-1)+3]';
 %inner_vertices = tempIV(:);
+inner_vertices=zeros(length(p)*3,1);
+step=1;
+acc=0.001;
+for iterator=1:length(p)
+if p(iterator,1)>(0+acc) && p(iterator,1)<(10-acc) && p(iterator,2)>(0+acc) && p(iterator,2)<(10-acc)
+    inner_vertices(step)=iterator;
+    step=step+1;
+end
+end
+step_h=3*(step-1);
+real_inner_vertices=inner_vertices(1:step-1);
+test_p=zeros(length(p),3);
+test_p(real_inner_vertices,:)=p(real_inner_vertices,:);
 
-% A = A(inner_vertices,inner_vertices);
-% M = M(inner_vertices,inner_vertices);
+inner_vertices(1:3:step_h)=real_inner_vertices*3-2;
+inner_vertices(2:3:step_h)=real_inner_vertices*3-1;
+inner_vertices(3:3:step_h)=real_inner_vertices*3;
+inner_vertices=inner_vertices(1:step_h);
+
+ A = A(inner_vertices,inner_vertices);
+ M = M(inner_vertices,inner_vertices);
 %F = F(inner_vertices);
 A = sparse(A);
 
@@ -134,18 +152,20 @@ movie(gcf,Animation,20)
 %}
 %% tetramesh mode
 
-scaling = 10;
+scaling = 100;
 f = figure('visible', 'off');
-plot_vec = zeros(length(p),3);
+pre_plot_vec = zeros(length(real_inner_vertices),3);
 maxiter = 10;
 
 for j=1:maxiter
     j  
     step=1;
         time=(2/maxiter)*j*pi;
-        for i=1:length(p)
-        plot_vec(i,:)=p(i,:)+scaling*[V(i*3-2,1),V(i*3-1,1),V(i*3,1)]*sin(time);
+        for i=1:length(real_inner_vertices)
+        pre_plot_vec(i,:)=p(real_inner_vertices(i),:)+scaling*[V(i*3-2,1),V(i*3-1,1),V(i*3,1)]*sin(time);
         end
+        plot_vec=p;
+        plot_vec(real_inner_vertices,:)=pre_plot_vec(:,:);
 
     f=figure('visible', 'off');
     TR = triangulation(tri,plot_vec);
@@ -155,7 +175,7 @@ for j=1:maxiter
 end
 
 f=figure('visible','on')
-movie(gcf,Animation,20)
+movie(gcf,Animation,200)
 
 %% example problem
 %{
