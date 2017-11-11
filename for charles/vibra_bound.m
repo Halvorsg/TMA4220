@@ -1,4 +1,4 @@
-function [ux,uy,uz,u_exact] = vibra_bound(N)
+function [Animation] = vibra_bound
 
 addpath ..\Grids
 addpath ..\Oppgave1
@@ -24,7 +24,7 @@ fcn = @plus; %For parallellization
 
 
 
-E = 1;
+E = 100000;
 v = 0.3;
 fx = @(x,y,z) (E/((1+v)*(1-2*v)))* ( 4*v*x*y*(z^2 - 1) - 2*(y^2 - 1)*(v - 1/2)*(x^2 + 2*z*x - 1) - 2*(z^2 - 1)*(v - 1/2)*(x^2 + 2*y*x - 1) - 2*(y^2 - 1)*(z^2 - 1)*(v - 1) + 4*v*x*z*(y^2 - 1));
 fy = @(x,y,z) (E/((1+v)*(1-2*v)))* ( 4*v*x*y*(z^2 - 1) - 2*(x^2 - 1)*(v - 1/2)*(y^2 + 2*z*y - 1) - 2*(z^2 - 1)*(v - 1/2)*(y^2 + 2*x*y - 1) - 2*(x^2 - 1)*(z^2 - 1)*(v - 1) + 4*v*y*z*(x^2 - 1));
@@ -81,15 +81,19 @@ inner_vertices=zeros(length(p)*3,1);
 step=1;
 acc=0.001;
 for iterator=1:length(p)
-if p(iterator,1)<(0+acc) || p(iterator,1)>(10-acc) || p(iterator,2)<(0+acc) || p(iterator,2)>(10-acc)
+if p(iterator,1)>(0+acc) && p(iterator,1)<(10-acc) && p(iterator,2)>(0+acc) && p(iterator,2)<(10-acc)
     inner_vertices(step)=iterator;
     step=step+1;
 end
 end
 step_h=3*(step-1);
-inner_vertices(1:3:step_h)=inner_vertices(1:step-1)*3-2;
-inner_vertices(2:3:step_h)=inner_vertices(1:step-1)*3-1;
-inner_vertices(3:3:step_h)=inner_vertices(1:step-1)*3;
+real_inner_vertices=inner_vertices(1:step-1);
+test_p=zeros(length(p),3);
+test_p(real_inner_vertices,:)=p(real_inner_vertices,:);
+
+inner_vertices(1:3:step_h)=real_inner_vertices*3-2;
+inner_vertices(2:3:step_h)=real_inner_vertices*3-1;
+inner_vertices(3:3:step_h)=real_inner_vertices*3;
 inner_vertices=inner_vertices(1:step_h);
 
  A = A(inner_vertices,inner_vertices);
@@ -148,20 +152,20 @@ movie(gcf,Animation,20)
 %}
 %% tetramesh mode
 
-scaling = 1;
+scaling = 10;
 f = figure('visible', 'off');
-pre_plot_vec = zeros(length(inner_vertices),3);
-maxiter = 10;
+pre_plot_vec = zeros(length(real_inner_vertices),3);
+maxiter = 20;
 
 for j=1:maxiter
     j  
     step=1;
         time=(2/maxiter)*j*pi;
-        for i=1:length(inner_vertices)/3
-        pre_plot_vec(i,:)=p(inner_vertices(3*i)/3,:)+scaling*[V(i*3-2,1),V(i*3-1,1),V(i*3,1)]*sin(time);
+        for i=1:length(real_inner_vertices)
+        pre_plot_vec(i,:)=p(real_inner_vertices(i),:)+scaling*[V(i*3-2,1),V(i*3-1,1),V(i*3,1)]*sin(time);
         end
         plot_vec=p;
-        plot_vec(inner_vertices)=pre_plot_vec(inner_vertices);
+        plot_vec(real_inner_vertices,:)=pre_plot_vec(:,:);
 
     f=figure('visible', 'off');
     TR = triangulation(tri,plot_vec);
@@ -171,7 +175,7 @@ for j=1:maxiter
 end
 
 f=figure('visible','on')
-movie(gcf,Animation,20)
+%movie(gcf,Animation,20)
 
 %% example problem
 %{

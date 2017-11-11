@@ -1,4 +1,4 @@
-function [ux,uy,uz,u_exact] = vibra_bound(N)
+function [Animation] = vibra_bound(N)
 
 addpath ..\Grids
 addpath ..\Oppgave1
@@ -152,10 +152,10 @@ movie(gcf,Animation,20)
 %}
 %% tetramesh mode
 
-scaling = 100;
+scaling = 10;
 f = figure('visible', 'off');
 pre_plot_vec = zeros(length(real_inner_vertices),3);
-maxiter = 10;
+maxiter = 20;
 
 for j=1:maxiter
     j  
@@ -175,7 +175,7 @@ for j=1:maxiter
 end
 
 f=figure('visible','on')
-movie(gcf,Animation,200)
+%movie(gcf,Animation,20)
 
 %% example problem
 %{
