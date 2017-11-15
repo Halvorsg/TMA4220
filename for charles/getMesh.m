@@ -3,7 +3,7 @@ cnt = 1;
 fileID = fopen(file_name,'r');
 points = importdata(file_name,' ',5);
 str = '0';
-p = zeros(1000,3);
+p = zeros(40000,3);
 i = 1;
 while ~isequal(str,'$EndNodes')
     str = fgetl(fileID);
@@ -15,6 +15,7 @@ while ~isequal(str,'$EndNodes')
     end
     cnt = cnt+1;
 end
+p=p(1:i-1,:);
 Elements = zeros(ceil(length(p)*10),4);
 i = 1;
 cnt = 1;

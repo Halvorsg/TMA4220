@@ -40,7 +40,8 @@ A = spalloc(3*N,3*N,10*N);
 M = spalloc(3*N,3*N,10*N);
 p1 = p(tri(:,1),:)'; p2 = p(tri(:,2),:)'; p3 = p(tri(:,3),:)'; p4 = p(tri(:,4),:)';
 tic
-for i = 1:length(tri)
+parfor i = 1:length(tri)
+    i
 %     p1 = p(tri(i,1),:)'; p2 = p(tri(i,2),:)'; p3 = p(tri(i,3),:)'; p4 = p(tri(i,4),:)'; 
     %Finding the right indices for A by i = 3*(î-1) + d 
     tempIndices = [3*(tri(i,:)-1)+1 ; 3*(tri(i,:)-1)+2 ; 3*(tri(i,:)-1)+3];
@@ -83,7 +84,8 @@ step=1;
 b_step=1;
 acc=0.001;
 for iterator=1:length(p)
-if p(1,1)~=p(iterator,1) || p(1,2)~=p(iterator,2) || p(1,3)~=p(iterator,3)%(p(iterator,1)>(0+acc) && p(iterator,1)<(10-acc) && p(iterator,2)>(0+acc) && p(iterator,2)<(10-acc)) || ((p(iterator,3)>0.27+acc || p(iterator,3)<0.23)) && (p(iterator,1)<(0+acc) || (p(iterator,1)>(10-acc) || p(iterator,2)<(0+acc) || p(iterator,2)>(10-acc)))
+%if p(1,1)~=p(iterator,1) || p(1,2)~=p(iterator,2) || p(1,3)~=p(iterator,3)
+if (p(iterator,1)>(0+acc) && p(iterator,1)<(10-acc) && p(iterator,2)>(0+acc) && p(iterator,2)<(10-acc)) || ((p(iterator,3)>0.27+acc || p(iterator,3)<0.23)) && (p(iterator,1)<(0+acc) || (p(iterator,1)>(10-acc) || p(iterator,2)<(0+acc) || p(iterator,2)>(10-acc)))
     inner_vertices(step)=iterator;
     step=step+1;
 else
@@ -98,7 +100,7 @@ boundary_points=boundary_points(1:b_step-1);
 
 
 %% xyz lock
-
+%{
 
 step_h=3*(step-1);
 test_p=zeros(length(p),3);
@@ -108,7 +110,7 @@ inner_vertices(1:3:step_h)=real_inner_vertices*3-2;
 inner_vertices(2:3:step_h)=real_inner_vertices*3-1;
 inner_vertices(3:3:step_h)=real_inner_vertices*3;
 inner_vertices=inner_vertices(1:step_h);
-
+%}
 
 %% z lock only
 %{
@@ -126,7 +128,7 @@ inner_vertices=inner_vertices(1:xy_b_p_h);
 %}
 
 %% xy_lock_only
-%{
+
 step_h=3*(step-1);
 
 inner_vertices(1:3:step_h)=real_inner_vertices*3-2;
@@ -137,7 +139,7 @@ xy_b_p_h=length(p)-(step-1);
 xy_b_p_h=xy_b_p_h+step_h;
 inner_vertices(step_h+1:xy_b_p_h)=boundary_points*3;
 inner_vertices=inner_vertices(1:xy_b_p_h);
-%}
+
  A = A(inner_vertices,inner_vertices);
  M = M(inner_vertices,inner_vertices);
 %F = F(inner_vertices);
@@ -145,14 +147,42 @@ A = sparse(A);
 
 %% We now have M and A, want to find the eigenvalues inv(M)*A
 tic
-
 [V,D] = eigs(M,A,20);
 [D,index] = sort(diag(D)); %Eigenvalues sorted from largest to smallest
 V = V(:,index); % Eigenvectors corresponding to eigenvalues in D
 eigen = toc;
 fprintf('Eigenvalues = %f\n',eigen)
-%
-%% surface mpde
+
+%% surface contour mode
+
+scaling = 10;
+
+x=zeros(length(p),1);
+y=zeros(length(p),1);
+z=zeros(length(p),1);
+
+step=1;
+  for i=1:length(real_inner_vertices)
+    if p(i,3)>0.48
+    x(step)=p(i,1)+V(real_inner_vertices(i)*3-2,5)*scaling;
+    y(step)=p(i,2)+V(real_inner_vertices(i)*3-1,5)*scaling;
+    z(step)=p(i,3)+V(real_inner_vertices(i)*3,5)*scaling;
+    step=step+1;
+    end
+  end
+    x=x(1:step-1);
+    y=y(1:step-1);
+    z=z(1:step-1);
+   
+    
+[m_x,m_y] = meshgrid(0:.2:10, 0:.2:10);
+test_plot = griddata(x,y,z,m_x,m_y);%   
+
+Animation=figure;
+
+%contour(m_x,m_y,test_plot);
+
+%% surface animation mode
 %{
 scaling = 10;
 f = figure('visible', 'off');
@@ -190,10 +220,10 @@ Animation(jtt)=getframe(f);
 end
 f=figure('visible','on')
 movie(gcf,Animation,20)
-
 %}
-%% tetramesh mode
 
+%% tetramesh animation mode
+%{
 scaling = 10;
 f = figure('visible', 'off');
 %pre_plot_vec = zeros(length(real_inner_vertices)+length(boundary_points),3);
@@ -225,6 +255,7 @@ end
 
 f=figure('visible','on')
 %movie(gcf,Animation,20)
+%}
 
 %% example problem
 %{
