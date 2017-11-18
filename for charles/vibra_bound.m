@@ -110,10 +110,10 @@ inner_vertices(1:3:step_h)=real_inner_vertices*3-2;
 inner_vertices(2:3:step_h)=real_inner_vertices*3-1;
 inner_vertices(3:3:step_h)=real_inner_vertices*3;
 inner_vertices=inner_vertices(1:step_h);
-%}
 
+%}
 %% z lock only
-%{
+
 step_h=3*(step-1);
 
 inner_vertices(1:3:step_h)=real_inner_vertices*3-2;
@@ -125,10 +125,10 @@ xy_b_p_h=xy_b_p_h*2+step_h;
 inner_vertices(step_h+1:2:xy_b_p_h)=boundary_points*3-2;
 inner_vertices(step_h+2:2:xy_b_p_h)=boundary_points*3-1;
 inner_vertices=inner_vertices(1:xy_b_p_h);
-%}
+
 
 %% xy_lock_only
-
+%{
 step_h=3*(step-1);
 
 inner_vertices(1:3:step_h)=real_inner_vertices*3-2;
@@ -144,7 +144,7 @@ inner_vertices=inner_vertices(1:xy_b_p_h);
  M = M(inner_vertices,inner_vertices);
 %F = F(inner_vertices);
 A = sparse(A);
-
+%}
 %% We now have M and A, want to find the eigenvalues inv(M)*A
 tic
 [V,D] = eigs(M,A,20);
@@ -154,19 +154,29 @@ eigen = toc;
 fprintf('Eigenvalues = %f\n',eigen)
 
 %% surface contour mode
-
+%{
 scaling = 10;
 
 x=zeros(length(p),1);
 y=zeros(length(p),1);
 z=zeros(length(p),1);
 
+%{
+time=(2/maxiter)*j*pi;
+        for i=1:length(real_inner_vertices)
+        pre_plot_vec(i,:)=p(real_inner_vertices(i),:)+scaling*[V(i*3-2,1),V(i*3-1,1),V(i*3,1)]*sin(time);
+        end
+        %for i=1:length(boundary_points)
+        %pre_plot_vec(length(real_inner_vertices)+i,:)=p(boundary_points(i),:)+scaling*[V(length(real_inner_vertices)*3+i*2-1,1),V(length(real_inner_vertices)*3+i*2,1),0]*sin(time);
+        %end
+  %}      
+
 step=1;
   for i=1:length(real_inner_vertices)
-    if p(i,3)>0.48
-    x(step)=p(i,1)+V(real_inner_vertices(i)*3-2,5)*scaling;
-    y(step)=p(i,2)+V(real_inner_vertices(i)*3-1,5)*scaling;
-    z(step)=p(i,3)+V(real_inner_vertices(i)*3,5)*scaling;
+    if p(real_inner_vertices(i),3)>0.48
+    x(step)=p(real_inner_vertices(i),1)+V(i*3-2,1)*scaling;
+    y(step)=p(real_inner_vertices(i),2)+V(i*3-1,1)*scaling;
+    z(step)=p(real_inner_vertices(i),3)+V(i*3,1)*scaling;
     step=step+1;
     end
   end
@@ -174,14 +184,15 @@ step=1;
     y=y(1:step-1);
     z=z(1:step-1);
    
-    
+tri_2d=delaunay(x,y);
+trisurf(tri_2d,x,y,z);
 [m_x,m_y] = meshgrid(0:.2:10, 0:.2:10);
 test_plot = griddata(x,y,z,m_x,m_y);%   
 
 Animation=figure;
 
 %contour(m_x,m_y,test_plot);
-
+%}
 %% surface animation mode
 %{
 scaling = 10;
@@ -223,13 +234,13 @@ movie(gcf,Animation,20)
 %}
 
 %% tetramesh animation mode
-%{
+
 scaling = 10;
 f = figure('visible', 'off');
 %pre_plot_vec = zeros(length(real_inner_vertices)+length(boundary_points),3);
 pre_plot_vec = zeros(length(real_inner_vertices),3);
 
-maxiter = 10;
+maxiter = 5;
 
 for j=1:maxiter
     j  
@@ -255,7 +266,7 @@ end
 
 f=figure('visible','on')
 %movie(gcf,Animation,20)
-%}
+
 
 %% example problem
 %{
