@@ -85,7 +85,7 @@ b_step=1;
 acc=0.001;
 for iterator=1:length(p)
 %if p(1,1)~=p(iterator,1) || p(1,2)~=p(iterator,2) || p(1,3)~=p(iterator,3)
-if (p(iterator,1)>(0+acc) && p(iterator,1)<(10-acc) && p(iterator,2)>(0+acc) && p(iterator,2)<(10-acc)) || ((p(iterator,3)>0.27+acc || p(iterator,3)<0.23)) && (p(iterator,1)<(0+acc) || (p(iterator,1)>(10-acc) || p(iterator,2)<(0+acc) || p(iterator,2)>(10-acc)))
+if (p(iterator,1)>(0+acc) && p(iterator,1)<(10-acc) && p(iterator,2)>(0+acc) && p(iterator,2)<(10-acc)) %|| ((p(iterator,3)>0.27+acc || p(iterator,3)<0.23)) && (p(iterator,1)<(0+acc) || (p(iterator,1)>(10-acc) || p(iterator,2)<(0+acc) || p(iterator,2)>(10-acc)))
     inner_vertices(step)=iterator;
     step=step+1;
 else
@@ -100,7 +100,7 @@ boundary_points=boundary_points(1:b_step-1);
 
 
 %% xyz lock
-%{
+
 
 step_h=3*(step-1);
 test_p=zeros(length(p),3);
@@ -111,9 +111,9 @@ inner_vertices(2:3:step_h)=real_inner_vertices*3-1;
 inner_vertices(3:3:step_h)=real_inner_vertices*3;
 inner_vertices=inner_vertices(1:step_h);
 
-%}
-%% z lock only
 
+%% z lock only
+%{
 step_h=3*(step-1);
 
 inner_vertices(1:3:step_h)=real_inner_vertices*3-2;
@@ -125,7 +125,7 @@ xy_b_p_h=xy_b_p_h*2+step_h;
 inner_vertices(step_h+1:2:xy_b_p_h)=boundary_points*3-2;
 inner_vertices(step_h+2:2:xy_b_p_h)=boundary_points*3-1;
 inner_vertices=inner_vertices(1:xy_b_p_h);
-
+%}
 
 %% xy_lock_only
 %{
@@ -240,14 +240,14 @@ f = figure('visible', 'off');
 %pre_plot_vec = zeros(length(real_inner_vertices)+length(boundary_points),3);
 pre_plot_vec = zeros(length(real_inner_vertices),3);
 
-maxiter = 5;
+maxiter = 10;
 
 for j=1:maxiter
     j  
     step=1;
         time=(2/maxiter)*j*pi;
         for i=1:length(real_inner_vertices)
-        pre_plot_vec(i,:)=p(real_inner_vertices(i),:)+scaling*[V(i*3-2,1),V(i*3-1,1),V(i*3,1)]*sin(time);
+        pre_plot_vec(i,:)=p(real_inner_vertices(i),:)+scaling*[0,0,V(i*3,3)]*sin(time);
         end
         %for i=1:length(boundary_points)
         %pre_plot_vec(length(real_inner_vertices)+i,:)=p(boundary_points(i),:)+scaling*[V(length(real_inner_vertices)*3+i*2-1,1),V(length(real_inner_vertices)*3+i*2,1),0]*sin(time);
