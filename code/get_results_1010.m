@@ -1,4 +1,4 @@
-function [V,D,p,real_inner_vertices] = get_results()
+function [V,D,p,real_inner_vertices] = get_results_1010()
 
 addpath ('/home/shomeb/h/halvorsg/Matlab/MATLAB/TMA4220/Project 2/for charles/Grids');
 addpath ('/home/shomeb/h/halvorsg/Matlab/MATLAB/TMA4220/Project 2/for charles/Oppgave1');
@@ -6,7 +6,7 @@ addpath ('/home/shomeb/h/halvorsg/Matlab/MATLAB/TMA4220/Project 2/for charles/Op
 %[p,tri,edge] = getDefinedBox(-1,1,-1,1,-1,1,N);
 %TR = triangulation(tri,p);
 %tetramesh(TR)
-[p,tri] = getMesh('plate_msh_coarser.msh');
+[p,tri] = getMesh('rectangle_fine.msh');
 %TR = triangulation(tri,p);
 %tetramesh(TR)
 
@@ -23,9 +23,10 @@ fcn = @plus; %For parallellization
 
 
 
-
 E = 235000;
-v = 0.346;
+v = 0.1;
+%E = 100000;
+%v = 0.4;
 fx = @(x,y,z) (E/((1+v)*(1-2*v)))* ( 4*v*x*y*(z^2 - 1) - 2*(y^2 - 1)*(v - 1/2)*(x^2 + 2*z*x - 1) - 2*(z^2 - 1)*(v - 1/2)*(x^2 + 2*y*x - 1) - 2*(y^2 - 1)*(z^2 - 1)*(v - 1) + 4*v*x*z*(y^2 - 1));
 fy = @(x,y,z) (E/((1+v)*(1-2*v)))* ( 4*v*x*y*(z^2 - 1) - 2*(x^2 - 1)*(v - 1/2)*(y^2 + 2*z*y - 1) - 2*(z^2 - 1)*(v - 1/2)*(y^2 + 2*x*y - 1) - 2*(x^2 - 1)*(z^2 - 1)*(v - 1) + 4*v*y*z*(x^2 - 1));
 fz = @(x,y,z) (E/((1+v)*(1-2*v)))* ( 4*v*x*z*(y^2 - 1) - 2*(x^2 - 1)*(v - 1/2)*(z^2 + 2*y*z - 1) - 2*(y^2 - 1)*(v - 1/2)*(z^2 + 2*x*z - 1) - 2*(x^2 - 1)*(y^2 - 1)*(v - 1) + 4*v*y*z*(x^2 - 1));
@@ -72,20 +73,17 @@ quad = toc;
 fprintf('Matrix = %f \nQuadrature = %f\n',mat,quad)
 
 %% Implementing boundary conditions and solving
-%y = (~ismember(tri,edge)).*tri;
-%inner_vertices_2 = unique(y);
-%inner_vertices_2 = inner_vertices_2(2:end);
-
-%tempIV = [3*(inner_vertices_2-1)+1 ; 3*(inner_vertices_2-1)+2 ; 3*(inner_vertices_2-1)+3]';
-%inner_vertices = tempIV(:);
 inner_vertices=zeros(length(p)*3,1);
 boundary_points=zeros(length(p)*3,1);
 step=1;
 b_step=1;
 acc=0.001;
+
+% alternative boundary conditions commented
+
 for iterator=1:length(p)
 %if p(1,1)~=p(iterator,1) || p(1,2)~=p(iterator,2) || p(1,3)~=p(iterator,3)
-if (p(iterator,1)>(0+acc) && p(iterator,1)<(100-acc) && p(iterator,2)>(0+acc) && p(iterator,2)<(100-acc)) %|| ((p(iterator,3)>0.27+acc || p(iterator,3)<0.23)) && (p(iterator,1)<(0+acc) || (p(iterator,1)>(10-acc) || p(iterator,2)<(0+acc) || p(iterator,2)>(10-acc)))
+if (p(iterator,1)>(0+acc) && p(iterator,1)<(10-acc) && p(iterator,2)>(0+acc) && p(iterator,2)<(10-acc)) %|| ((p(iterator,3)>0.27+acc || p(iterator,3)<0.23)) && (p(iterator,1)<(0+acc) || (p(iterator,1)>(10-acc) || p(iterator,2)<(0+acc) || p(iterator,2)>(10-acc)))
     inner_vertices(step)=iterator;
     step=step+1;
 else
@@ -100,7 +98,7 @@ boundary_points=boundary_points(1:b_step-1);
 
 
 %% xyz lock
-%{
+
 
 step_h=3*(step-1);
 test_p=zeros(length(p),3);
@@ -110,7 +108,7 @@ inner_vertices(1:3:step_h)=real_inner_vertices*3-2;
 inner_vertices(2:3:step_h)=real_inner_vertices*3-1;
 inner_vertices(3:3:step_h)=real_inner_vertices*3;
 inner_vertices=inner_vertices(1:step_h);
-%}
+
 
 %% z lock only
 %{
@@ -128,7 +126,7 @@ inner_vertices=inner_vertices(1:xy_b_p_h);
 %}
 
 %% xy_lock_only
-
+%{
 step_h=3*(step-1);
 
 inner_vertices(1:3:step_h)=real_inner_vertices*3-2;
@@ -139,7 +137,7 @@ xy_b_p_h=length(p)-(step-1);
 xy_b_p_h=xy_b_p_h+step_h;
 inner_vertices(step_h+1:xy_b_p_h)=boundary_points*3;
 inner_vertices=inner_vertices(1:xy_b_p_h);
-
+%}
  A = A(inner_vertices,inner_vertices);
  M = M(inner_vertices,inner_vertices);
 %F = F(inner_vertices);
@@ -147,7 +145,7 @@ A = sparse(A);
 
 %% We now have M and A, want to find the eigenvalues inv(M)*A
 tic
-[V,D] = eigs(M,A,50); % swap
+[V,D] = eigs(M,A,20);
 [D,index] = sort(diag(D)); %Eigenvalues sorted from largest to smallest
 V = V(:,index); % Eigenvectors corresponding to eigenvalues in D
 eigen = toc;
@@ -156,17 +154,6 @@ fprintf('Eigenvalues = %f\n',eigen)
 %% surface contour mode
 
 
-%{
-time=(2/maxiter)*j*pi;
-        for i=1:length(real_inner_vertices)
-        pre_plot_vec(i,:)=p(real_inner_vertices(i),:)+scaling*[V(i*3-2,1),V(i*3-1,1),V(i*3,1)]*sin(time);
-        end
-        %for i=1:length(boundary_points)
-        %pre_plot_vec(length(real_inner_vertices)+i,:)=p(boundary_points(i),:)+scaling*[V(length(real_inner_vertices)*3+i*2-1,1),V(length(real_inner_vertices)*3+i*2,1),0]*sin(time);
-        %end
-  %}      
-scaling = 10;
-
 x=zeros(length(p),1);
 y=zeros(length(p),1);
 z=zeros(length(p),1);
@@ -174,9 +161,9 @@ z=zeros(length(p),1);
 step=1;
   for i=1:length(real_inner_vertices)
     if p(real_inner_vertices(i),3)>0.48
-    x(step)=p(real_inner_vertices(i),1)+V(i*3-2,12)*scaling;
-    y(step)=p(real_inner_vertices(i),2)+V(i*3-1,12)*scaling;
-    z(step)=p(real_inner_vertices(i),3)+V(i*3,12)*scaling;
+    x(step)=p(real_inner_vertices(i),1)+V(i*3-2,12);
+    y(step)=p(real_inner_vertices(i),2)+V(i*3-1,12);
+    z(step)=p(real_inner_vertices(i),3)+V(i*3,12);
     step=step+1;
     end
   end
@@ -184,54 +171,15 @@ step=1;
     y=y(1:step-1);
     z=z(1:step-1);
    
-%tri_2d=delaunay(x,y);
-%trisurf(tri_2d,x,y,z);
-[m_x,m_y] = meshgrid(0:1:100, 0:1:100);
+
+[m_x,m_y] = meshgrid(0:.2:10, 0:.2:10);
 test_plot = griddata(x,y,z,m_x,m_y);%   
 contour(m_x,m_y,test_plot);
 Animation=figure(1);
 
-%% surface animation mode
-%{
-scaling = 10;
-f = figure('visible', 'off');
-x=zeros(length(p),1);
-y=zeros(length(p),1);
-z=zeros(length(p),1);
 
 
-maxiter = 10;
-for jtt=1:maxiter
-  jtt  
-step=1;
-    time=(2/maxiter)*jtt*pi;
-    for itt=1:length(p)
-    if p(itt,3)>0.98
-    x(step)=p(itt,1)+V(itt*3-2,5)*scaling*sin(time);
-    y(step)=p(itt,2)+V(itt*3-1,5)*scaling*sin(time);
-    z(step)=p(itt,3)+V(itt*3,5)*scaling*sin(time);
-    step=step+1;
-    end
-    end
-    x=x(1:step-1);
-    y=y(1:step-1);
-    z=z(1:step-1);
-   
-    
-     f=figure('visible', 'off');
-[m_x,m_y] = meshgrid(-1:.02:1, -1:.02:1);
-test_plot = griddata(x,y,z,m_x,m_y);
-surf(-1:0.02:1,-1:0.02:1,test_plot);
-zlim([0 2])
-Animation(jtt)=getframe(f);
-%   
-
-end
-f=figure('visible','on')
-movie(gcf,Animation,20)
-%}
-
-%% tetramesh animation mode
+%% tetramesh animation mode 
 %{
 scaling = 7;
 f = figure('visible', 'off');
